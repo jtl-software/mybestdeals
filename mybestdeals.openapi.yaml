@@ -1,0 +1,207 @@
+openapi: 3.0.3
+info:
+  title: MyBestDeals.com
+  description: |
+    Api used during job interview
+  version: 1.0.0
+paths:
+
+  /order:
+    get:
+      operationId: ListOrders
+      summary: List orders
+      description: List orders from API
+      parameters:
+        - in: query
+          name: limit
+          required: false
+          schema:
+            type: integer
+        - in: query
+          name: offset
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          $ref: '#/components/responses/ListOrderResponse'
+
+  /order/{orderId}:
+    get:
+      operationId: ListOrder
+      summary: List Order
+      description: List Order
+      parameters:
+        - in: path
+          name: orderId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/OrderResponse'
+        '404':
+          $ref: '#/components/responses/ClientError'
+
+  /order/{orderId}/shipped:
+    post:
+      operationId: SetShipment
+      summary: Set Shipment
+      description: Mark Order as Shipped
+      parameters:
+        - in: path
+          name: orderId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        $ref: '#/components/requestBodies/ShipmentRequest'
+      responses:
+        '201':
+          description: "Order marked as shipped"
+        '400':
+          $ref: '#/components/responses/ClientError'
+
+
+components:
+
+  requestBodies:
+
+    ShipmentRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Shipment'
+
+  responses:
+
+    ListOrderResponse:
+      description: "Ok"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              total:
+                type: integer
+                example: 120
+              orderList:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Order'
+
+    OrderResponse:
+      description: "Ok"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Order'
+
+    ClientError:
+      description: "Client Error"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ClientError'
+
+  schemas:
+
+    Order:
+      type: object
+      required:
+        - orderId
+        - shippingAddress
+        - billingAddress
+        - totalCent
+        - shippingCostCent
+        - orderLineItemList
+      properties:
+        orderId:
+          type: string
+          example: '123.431.242'
+        shippingAddress:
+          type: string
+          example: 'ADDRESS123'
+        billingAddress:
+          type: string
+          example: 'ADDRESS123'
+        totalCent:
+          type: integer
+          example: 7996
+        shippingCostCent:
+          type: integer
+          example: 399
+        commisionCent:
+          type: integer
+          example: 519
+        orderLineItemList:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderLineItem'
+
+
+    OrderLineItem:
+      type: object
+      required:
+        - orderLineItemId
+        - sku
+        - quantity
+        - pricePerUnitCent
+        - priceCent
+      properties:
+        orderLineItemId:
+          type: string
+          example: "322-242-224"
+        sku:
+          type: string
+          example: "A123"
+        quantity:
+          type: integer
+          example: 4
+        pricePerUnitCent:
+          type: integer
+          example: 1999
+        priceCent:
+          type: integer
+          example: 7996
+
+    Shipment:
+      type: object
+      required:
+        - trackingId
+        - carrier
+        - orderLineItemList
+      properties:
+        trackingId:
+          type: string
+          example: "124234343"
+        carrier:
+          type: string
+          example: "DHL"
+        orderLineItemList:
+          type: array
+          minimum: 1
+          items:
+            $ref: '#/components/schemas/ShipmentOrderLineItem'
+
+    ShipmentOrderLineItem:
+      type: object
+      required:
+        - orderLineItemId
+        - quantity
+      properties:
+        orderLineItemId:
+          type: string
+          example: "322-242-224"
+        quantity:
+          type: integer
+          example: 4
+
+    ClientError:
+      type: object
+      properties:
+        error:
+          type: array
+          items:
+            type: string
+            example: "Sorry, Dave! I'm afraid i can't do that."
